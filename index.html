@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Promptly</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="generator" aria-labelledby="app-title">
+        <div class="brand-row">
+          <div class="brand-copy">
+            <div class="brand-lockup" aria-label="Promptly">
+              <span class="brand-mark" aria-hidden="true">P</span>
+              <span>Promptly</span>
+            </div>
+            <h1 id="app-title">A better question, right when you need it.</h1>
+            <p class="tagline">
+              Reflective prompts for clarity, growth, healing, and the next honest step.
+            </p>
+          </div>
+          <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme">
+            <span aria-hidden="true">☾</span>
+          </button>
+        </div>
+
+        <form class="controls" id="promptForm">
+          <label>
+            <span>Focus</span>
+            <select id="focus">
+              <option value="self-trust">Self-trust</option>
+              <option value="clarity">Clarity</option>
+              <option value="relationships">Relationships</option>
+              <option value="career">Career</option>
+              <option value="healing">Healing</option>
+              <option value="gratitude">Gratitude</option>
+              <option value="discipline">Discipline</option>
+              <option value="dreams">Dreams</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Tone</span>
+            <select id="tone">
+              <option value="gentle">Gentle</option>
+              <option value="direct">Direct</option>
+              <option value="hopeful">Hopeful</option>
+              <option value="deep">Deep</option>
+              <option value="playful">Playful</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Time</span>
+            <select id="time">
+              <option value="3">3 min</option>
+              <option value="5" selected>5 min</option>
+              <option value="10">10 min</option>
+              <option value="15">15 min</option>
+            </select>
+          </label>
+
+          <button class="primary-button" type="submit">Generate</button>
+        </form>
+
+        <article class="prompt-panel" aria-live="polite">
+          <div class="prompt-meta">
+            <span id="promptTag">Self-trust</span>
+            <span id="timeTag">5 min</span>
+          </div>
+          <p id="promptText">
+            What would change today if you trusted that your needs were worth listening to the first time?
+          </p>
+          <div class="prompt-actions">
+            <button class="secondary-button" id="savePrompt" type="button">Save</button>
+            <button class="secondary-button" id="copyPrompt" type="button">Copy</button>
+            <button class="secondary-button" id="newPrompt" type="button">Again</button>
+          </div>
+        </article>
+      </section>
+
+      <section class="workspace" aria-label="Journal workspace">
+        <div class="timer-card">
+          <div>
+            <p class="eyebrow">Session</p>
+            <p class="timer" id="timer">05:00</p>
+          </div>
+          <div class="timer-actions">
+            <button class="icon-button" id="startTimer" type="button" aria-label="Start timer">
+              <span aria-hidden="true">▶</span>
+            </button>
+            <button class="icon-button" id="resetTimer" type="button" aria-label="Reset timer">
+              <span aria-hidden="true">↺</span>
+            </button>
+          </div>
+        </div>
+
+        <label class="entry-wrap">
+          <span>Entry</span>
+          <textarea
+            id="entry"
+            placeholder="Start writing..."
+            spellcheck="true"
+            autocapitalize="sentences"
+            autocomplete="off"
+          ></textarea>
+        </label>
+
+        <div class="saved">
+          <div class="section-heading">
+            <p class="eyebrow">Saved prompts</p>
+            <button class="text-button" id="clearSaved" type="button">Clear</button>
+          </div>
+          <div class="saved-list" id="savedList"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
