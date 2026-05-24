@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <title>Promptimistic Public Reflections</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="public-page">
+    <main class="public-shell">
+      <section class="public-hero" aria-labelledby="public-title">
+        <nav class="public-nav" aria-label="Promptimistic navigation">
+          <a class="brand-lockup" href="index.html" aria-label="Promptimistic journal">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Promptimistic</span>
+          </a>
+          <a class="secondary-link" href="index.html">Private journal</a>
+        </nav>
+
+        <div class="public-hero-copy">
+          <p class="eyebrow">Open reflections</p>
+          <h1 id="public-title">Questions worth sitting with. Reflections worth sharing.</h1>
+          <p class="tagline">
+            A quiet collection of entries the writer chose to share openly.
+          </p>
+        </div>
+      </section>
+
+      <section class="public-reflections" aria-labelledby="shared-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Shared archive</p>
+            <h2 id="shared-title">Public reflections</h2>
+          </div>
+          <small id="sharedCount">0 shared</small>
+        </div>
+        <div class="public-list" id="publicEntries"></div>
+      </section>
+    </main>
+
+    <script src="public.js"></script>
+  </body>
+</html>

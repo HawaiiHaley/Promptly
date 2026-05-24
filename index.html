@@ -25,33 +25,37 @@
               Reflective prompts for clarity, growth, healing, and the next honest step.
             </p>
           </div>
-          <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme">
-            <span aria-hidden="true">☾</span>
-          </button>
+          <div class="top-actions" aria-label="App shortcuts">
+            <a class="secondary-link" href="public.html">Public page</a>
+            <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme">
+              <span aria-hidden="true">☾</span>
+            </button>
+          </div>
         </div>
 
         <form class="controls" id="promptForm">
           <label>
             <span>Focus</span>
             <select id="focus">
-              <option value="self-trust">Self-trust</option>
-              <option value="clarity">Clarity</option>
-              <option value="relationships">Relationships</option>
               <option value="career">Career</option>
-              <option value="healing">Healing</option>
-              <option value="gratitude">Gratitude</option>
+              <option value="clarity">Clarity</option>
               <option value="discipline">Discipline</option>
               <option value="dreams">Dreams</option>
+              <option value="healing">Healing</option>
+              <option value="gratitude">Gratitude</option>
+              <option value="relationships">Relationships</option>
+              <option value="self-trust">Self-trust</option>
+              <option value="surprise">Surprise me</option>
             </select>
           </label>
 
           <label>
             <span>Tone</span>
             <select id="tone">
-              <option value="gentle">Gentle</option>
               <option value="direct">Direct</option>
-              <option value="hopeful">Hopeful</option>
               <option value="deep">Deep</option>
+              <option value="gentle">Gentle</option>
+              <option value="hopeful">Hopeful</option>
               <option value="playful">Playful</option>
             </select>
           </label>
@@ -66,21 +70,29 @@
             </select>
           </label>
 
+          <label>
+            <span>Intention</span>
+            <select id="intention">
+              <option value="begin">Take the next step</option>
+              <option value="decide">Make a decision</option>
+              <option value="appreciate">Notice what is good</option>
+              <option value="release">Release something</option>
+              <option value="understand">Understand myself</option>
+            </select>
+          </label>
+
           <button class="primary-button" type="submit">Generate</button>
         </form>
 
         <article class="prompt-panel" aria-live="polite">
           <div class="prompt-meta">
+            <span id="todayTag">Today’s prompt</span>
             <span id="promptTag">Self-trust</span>
             <span id="timeTag">5 min</span>
           </div>
           <p id="promptText">
             What would change today if you trusted that your needs were worth listening to the first time?
           </p>
-          <div class="prompt-actions">
-            <button class="secondary-button" id="copyPrompt" type="button">Copy</button>
-            <button class="secondary-button" id="newPrompt" type="button">Again</button>
-          </div>
         </article>
       </section>
 
@@ -112,14 +124,53 @@
         </label>
 
         <div class="entry-actions">
-          <p id="entryStatus" aria-live="polite">Your reflection is saved only on this device.</p>
-          <button class="primary-button" id="saveEntry" type="button">Save reflection</button>
+          <p id="entryStatus" aria-live="polite">Saved reflections stay private unless you choose to share them.</p>
+          <div class="entry-buttons">
+            <label class="visibility-choice">
+              <span>Visibility</span>
+              <select id="entryVisibility">
+                <option value="private">Private space</option>
+                <option value="public">Share openly</option>
+              </select>
+            </label>
+            <button class="secondary-button" id="cancelEdit" type="button" hidden>Cancel edit</button>
+            <button class="primary-button" id="saveEntry" type="button">Save reflection</button>
+          </div>
         </div>
 
         <div class="saved">
           <div class="section-heading">
             <p class="eyebrow">Saved reflections</p>
             <button class="text-button" id="clearEntries" type="button">Clear</button>
+          </div>
+          <div class="archive-tools" aria-label="Saved reflection tools">
+            <label>
+              <span>Search</span>
+              <input id="entrySearch" type="search" placeholder="Keyword or prompt" />
+            </label>
+            <label>
+              <span>Focus</span>
+              <select id="entryFocusFilter">
+                <option value="all">All</option>
+                <option value="Self-trust">Self-trust</option>
+                <option value="Clarity">Clarity</option>
+                <option value="Relationships">Relationships</option>
+                <option value="Career">Career</option>
+                <option value="Healing">Healing</option>
+                <option value="Gratitude">Gratitude</option>
+                <option value="Discipline">Discipline</option>
+                <option value="Dreams">Dreams</option>
+              </select>
+            </label>
+            <label>
+              <span>Date</span>
+              <input id="entryDateFilter" type="date" />
+            </label>
+            <div class="export-actions">
+              <button class="secondary-button" id="copyAllEntries" type="button">Copy all</button>
+              <button class="secondary-button" id="downloadTxt" type="button">TXT</button>
+              <button class="secondary-button" id="downloadPdf" type="button">PDF</button>
+            </div>
           </div>
           <div class="saved-list" id="entriesList"></div>
         </div>

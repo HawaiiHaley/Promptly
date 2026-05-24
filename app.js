@@ -225,8 +225,32 @@ const prompts = {
   }
 };
 
+const intentionPrompts = {
+  understand: [
+    "What feeling keeps asking for your attention, and what might it be trying to protect?",
+    "What do you understand about yourself today that you did not understand a year ago?"
+  ],
+  release: [
+    "What are you ready to stop carrying as if it still belongs to you?",
+    "What would become lighter if you let the story be unfinished for now?"
+  ],
+  decide: [
+    "What choice would feel most honest if you trusted yourself to handle the consequences?",
+    "Which option creates more aliveness, and which option mostly protects you from discomfort?"
+  ],
+  appreciate: [
+    "What small good thing has been quietly supporting you lately?",
+    "What part of your current life would your younger self be relieved to see?"
+  ],
+  begin: [
+    "What is the smallest next step that would make this desire feel real?",
+    "What could you start today without needing to feel fully ready?"
+  ]
+};
+
 const state = {
   currentPrompt: "",
+  editingId: null,
   timerId: null,
   secondsLeft: 300,
   entries: loadSavedEntries()
@@ -236,16 +260,23 @@ const form = document.querySelector("#promptForm");
 const focusInput = document.querySelector("#focus");
 const toneInput = document.querySelector("#tone");
 const timeInput = document.querySelector("#time");
+const intentionInput = document.querySelector("#intention");
 const promptText = document.querySelector("#promptText");
 const promptTag = document.querySelector("#promptTag");
 const timeTag = document.querySelector("#timeTag");
-const newPromptButton = document.querySelector("#newPrompt");
-const copyButton = document.querySelector("#copyPrompt");
 const entry = document.querySelector("#entry");
+const entryVisibility = document.querySelector("#entryVisibility");
 const saveEntryButton = document.querySelector("#saveEntry");
+const cancelEditButton = document.querySelector("#cancelEdit");
 const entryStatus = document.querySelector("#entryStatus");
 const entriesList = document.querySelector("#entriesList");
 const clearEntriesButton = document.querySelector("#clearEntries");
+const entrySearch = document.querySelector("#entrySearch");
+const entryFocusFilter = document.querySelector("#entryFocusFilter");
+const entryDateFilter = document.querySelector("#entryDateFilter");
+const copyAllEntriesButton = document.querySelector("#copyAllEntries");
+const downloadTxtButton = document.querySelector("#downloadTxt");
+const downloadPdfButton = document.querySelector("#downloadPdf");
 const timer = document.querySelector("#timer");
 const startTimer = document.querySelector("#startTimer");
 const resetTimer = document.querySelector("#resetTimer");
@@ -259,7 +290,14 @@ function loadSavedEntries() {
       localStorage.getItem("promptly.entries") ||
       "[]";
     const entries = JSON.parse(stored);
-    return Array.isArray(entries) ? entries : [];
+    return Array.isArray(entries)
+      ? entries.map((item, index) => ({
+          ...item,
+          id: item.id || `legacy-${index}-${item.createdAt || Date.now()}`,
+          wordCount: item.wordCount || getWordCount(item.text || ""),
+          visibility: item.visibility || (item.isPublic ? "public" : "private")
+        }))
+      : [];
   } catch {
     return [];
   }
@@ -269,10 +307,181 @@ function getWordCount(text) {
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
+function formatEntryDate(date = new Date()) {
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(date);
+}
+
+function getDraft() {
+  try {
+    return JSON.parse(localStorage.getItem("promptimistic.draft") || "null");
+  } catch {
+    return null;
+  }
+}
+
+function persistDraft() {
+  const text = entry.value;
+
+  if (!text.trim()) {
+    localStorage.removeItem("promptimistic.draft");
+    return;
+  }
+
+  localStorage.setItem(
+    "promptimistic.draft",
+    JSON.stringify({
+      text,
+      prompt: state.currentPrompt,
+      focus: promptTag.textContent,
+      time: timeTag.textContent,
+      updatedAt: new Date().toISOString()
+    })
+  );
+  entryStatus.textContent = state.editingId ? "Editing draft autosaved." : "Draft autosaved.";
+}
+
+function clearDraft() {
+  localStorage.removeItem("promptimistic.draft");
+}
+
+function applyEntryToWorkspace(item, status) {
+  entry.value = item.text;
+  entryVisibility.value = item.visibility || "private";
+  state.currentPrompt = item.prompt;
+  promptText.textContent = item.prompt;
+  promptTag.textContent = item.focus;
+  timeTag.textContent = item.time;
+  entryStatus.textContent = status;
+}
+
+function setEditingMode(item) {
+  state.editingId = item.id;
+  saveEntryButton.textContent = "Update reflection";
+  cancelEditButton.hidden = false;
+  applyEntryToWorkspace(item, "Editing saved reflection.");
+  persistDraft();
+}
+
+function clearEditingMode(status = "Ready for a new reflection.") {
+  state.editingId = null;
+  saveEntryButton.textContent = "Save reflection";
+  cancelEditButton.hidden = true;
+  entryStatus.textContent = status;
+}
+
+function getFilteredEntries() {
+  const query = entrySearch.value.trim().toLowerCase();
+  const focus = entryFocusFilter.value;
+  const date = entryDateFilter.value;
+
+  return state.entries.filter((item) => {
+    const matchesQuery =
+      !query ||
+      item.text.toLowerCase().includes(query) ||
+      item.prompt.toLowerCase().includes(query) ||
+      item.focus.toLowerCase().includes(query);
+    const matchesFocus = focus === "all" || item.focus === focus;
+    const matchesDate = !date || (item.createdAtISO && item.createdAtISO.startsWith(date));
+
+    return matchesQuery && matchesFocus && matchesDate;
+  });
+}
+
+function serializeEntries(entries) {
+  if (!entries.length) {
+    return "No saved reflections yet.";
+  }
+
+  return entries
+    .map((item) => {
+      return [
+        item.prompt,
+        `${item.focus} · ${item.createdAt} · ${item.wordCount} words`,
+        "",
+        item.text
+      ].join("\n");
+    })
+    .join("\n\n---\n\n");
+}
+
+function downloadFile(filename, content, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function openPdfPrintView(entries) {
+  const printWindow = window.open("", "_blank");
+
+  if (!printWindow) {
+    entryStatus.textContent = "Allow popups to export PDF.";
+    return;
+  }
+
+  const safeEntries = entries.map((item) => ({
+    prompt: item.prompt,
+    meta: `${item.focus} · ${item.createdAt} · ${item.wordCount} words`,
+    text: item.text
+  }));
+
+  printWindow.document.write(`<!doctype html>
+    <html>
+      <head>
+        <title>Promptimistic Reflections</title>
+        <style>
+          body { color: #0b2828; font-family: Georgia, serif; margin: 40px; line-height: 1.5; }
+          h1 { font-family: system-ui, sans-serif; font-size: 20px; margin-bottom: 28px; }
+          article { break-inside: avoid; margin-bottom: 30px; }
+          h2 { font-size: 18px; margin: 0 0 8px; }
+          small { color: #52706c; font-family: system-ui, sans-serif; }
+          p { white-space: pre-wrap; }
+        </style>
+      </head>
+      <body>
+        <h1>Promptimistic Reflections</h1>
+      </body>
+    </html>`);
+
+  safeEntries.forEach((item) => {
+    const article = printWindow.document.createElement("article");
+    const heading = printWindow.document.createElement("h2");
+    const meta = printWindow.document.createElement("small");
+    const text = printWindow.document.createElement("p");
+
+    heading.textContent = item.prompt;
+    meta.textContent = item.meta;
+    text.textContent = item.text;
+    article.append(heading, meta, text);
+    printWindow.document.body.append(article);
+  });
+
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+}
+
 function pickPrompt() {
-  const focus = focusInput.value;
+  let focus = focusInput.value;
   const tone = toneInput.value;
-  const options = prompts[focus][tone];
+  const intention = intentionInput.value;
+  const focusKeys = Object.keys(prompts);
+
+  if (focus === "surprise") {
+    focus = focusKeys[Math.floor(Math.random() * focusKeys.length)];
+  }
+
+  const options = [...prompts[focus][tone], ...intentionPrompts[intention]];
   let next = options[Math.floor(Math.random() * options.length)];
 
   if (options.length > 1) {
@@ -285,11 +494,13 @@ function pickPrompt() {
   promptText.textContent = next;
   promptTag.textContent = prompts[focus].label;
   timeTag.textContent = `${timeInput.value} min`;
+  state.currentPrompt = promptText.textContent;
   setTimer(Number(timeInput.value) * 60);
 }
 
 function renderEntries() {
   entriesList.innerHTML = "";
+  const entries = getFilteredEntries();
 
   if (!state.entries.length) {
     const empty = document.createElement("p");
@@ -299,7 +510,15 @@ function renderEntries() {
     return;
   }
 
-  state.entries.forEach((item) => {
+  if (!entries.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "No reflections match those filters.";
+    entriesList.append(empty);
+    return;
+  }
+
+  entries.forEach((item) => {
     const card = document.createElement("article");
     card.className = "saved-item";
 
@@ -312,21 +531,58 @@ function renderEntries() {
     preview.textContent = item.text;
 
     const meta = document.createElement("small");
-    meta.textContent = `${item.createdAt} · ${item.wordCount} words`;
+    meta.textContent = `${item.createdAt} · ${item.wordCount} words · ${
+      item.visibility === "public" ? "Shared openly" : "Private space"
+    }`;
 
     const open = document.createElement("button");
     open.type = "button";
-    open.textContent = "Open reflection";
+    open.textContent = "Edit";
     open.addEventListener("click", () => {
-      entry.value = item.text;
-      state.currentPrompt = item.prompt;
-      promptText.textContent = item.prompt;
-      promptTag.textContent = item.focus;
-      timeTag.textContent = item.time;
-      entryStatus.textContent = "Loaded saved reflection.";
+      setEditingMode(item);
     });
 
-    card.append(prompt, preview, meta, open);
+    const visibility = document.createElement("button");
+    visibility.type = "button";
+    visibility.textContent = item.visibility === "public" ? "Make private" : "Share openly";
+    visibility.addEventListener("click", () => {
+      state.entries = state.entries.map((entryItem) =>
+        entryItem.id === item.id
+          ? {
+              ...entryItem,
+              visibility: entryItem.visibility === "public" ? "private" : "public",
+              updatedAtISO: new Date().toISOString()
+            }
+          : entryItem
+      );
+      persistEntries();
+      entryStatus.textContent =
+        item.visibility === "public"
+          ? "Reflection moved back to private space."
+          : "Reflection added to the public page.";
+    });
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "Delete";
+    remove.addEventListener("click", () => {
+      state.entries = state.entries.filter((entryItem) => entryItem.id !== item.id);
+      persistEntries();
+
+      if (state.editingId === item.id) {
+        entry.value = "";
+        clearDraft();
+        clearEditingMode("Deleted reflection.");
+      } else {
+        entryStatus.textContent = "Deleted reflection.";
+      }
+    });
+
+    const actions = document.createElement("div");
+    actions.className = "entry-card-actions";
+    actions.append(open, visibility, remove);
+
+    card.append(prompt, preview, meta, actions);
     entriesList.append(card);
   });
 }
@@ -376,16 +632,6 @@ form.addEventListener("submit", (event) => {
   pickPrompt();
 });
 
-newPromptButton.addEventListener("click", pickPrompt);
-
-copyButton.addEventListener("click", async () => {
-  await navigator.clipboard.writeText(state.currentPrompt);
-  copyButton.textContent = "Copied";
-  window.setTimeout(() => {
-    copyButton.textContent = "Copy";
-  }, 1200);
-});
-
 saveEntryButton.addEventListener("click", () => {
   const text = entry.value.trim();
 
@@ -395,31 +641,79 @@ saveEntryButton.addEventListener("click", () => {
     return;
   }
 
-  const item = {
-    id: globalThis.crypto?.randomUUID?.() || String(Date.now()),
-    text,
-    prompt: state.currentPrompt,
-    focus: promptTag.textContent,
-    time: timeTag.textContent,
-    wordCount: getWordCount(text),
-    createdAt: new Intl.DateTimeFormat(undefined, {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit"
-    }).format(new Date())
-  };
+  if (state.editingId) {
+    state.entries = state.entries.map((item) =>
+      item.id === state.editingId
+        ? {
+            ...item,
+            text,
+            prompt: state.currentPrompt,
+            focus: promptTag.textContent,
+            time: timeTag.textContent,
+            visibility: entryVisibility.value,
+            wordCount: getWordCount(text),
+            updatedAtISO: new Date().toISOString()
+          }
+        : item
+    );
+  } else {
+    const now = new Date();
+    const item = {
+      id: globalThis.crypto?.randomUUID?.() || String(Date.now()),
+      text,
+      prompt: state.currentPrompt,
+      focus: promptTag.textContent,
+      time: timeTag.textContent,
+      visibility: entryVisibility.value,
+      wordCount: getWordCount(text),
+      createdAt: formatEntryDate(now),
+      createdAtISO: now.toISOString()
+    };
 
-  state.entries = [item, ...state.entries].slice(0, 30);
+    state.entries = [item, ...state.entries].slice(0, 50);
+  }
+
   persistEntries();
   entry.value = "";
-  entryStatus.textContent = "Reflection saved.";
+  entryVisibility.value = "private";
+  clearDraft();
+  clearEditingMode(state.editingId ? "Reflection updated." : "Reflection saved.");
 });
 
 clearEntriesButton.addEventListener("click", () => {
-  state.entries = [];
-  persistEntries();
-  entryStatus.textContent = "Saved reflections cleared.";
+  if (window.confirm("Clear all saved reflections? This cannot be undone.")) {
+    state.entries = [];
+    persistEntries();
+    entryStatus.textContent = "Saved reflections cleared.";
+  }
+});
+
+cancelEditButton.addEventListener("click", () => {
+  state.editingId = null;
+  entry.value = "";
+  entryVisibility.value = "private";
+  clearDraft();
+  clearEditingMode("Edit canceled.");
+});
+
+entry.addEventListener("input", persistDraft);
+entrySearch.addEventListener("input", renderEntries);
+entryFocusFilter.addEventListener("change", renderEntries);
+entryDateFilter.addEventListener("change", renderEntries);
+
+copyAllEntriesButton.addEventListener("click", async () => {
+  await navigator.clipboard.writeText(serializeEntries(state.entries));
+  entryStatus.textContent = "Copied reflections.";
+});
+
+downloadTxtButton.addEventListener("click", () => {
+  downloadFile("promptimistic-reflections.txt", serializeEntries(state.entries), "text/plain");
+  entryStatus.textContent = "Downloaded TXT.";
+});
+
+downloadPdfButton.addEventListener("click", () => {
+  openPdfPrintView(state.entries);
+  entryStatus.textContent = "PDF export opened.";
 });
 
 timeInput.addEventListener("change", () => {
@@ -451,5 +745,19 @@ if (
 }
 
 state.currentPrompt = promptText.textContent.trim();
+const draft = getDraft();
+
+if (draft?.text) {
+  applyEntryToWorkspace(
+    {
+      text: draft.text,
+      prompt: draft.prompt || state.currentPrompt,
+      focus: draft.focus || promptTag.textContent,
+      time: draft.time || timeTag.textContent
+    },
+    "Draft restored."
+  );
+}
+
 renderEntries();
 renderTimer();
