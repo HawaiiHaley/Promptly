@@ -229,7 +229,7 @@ const state = {
   currentPrompt: "",
   timerId: null,
   secondsLeft: 300,
-  saved: JSON.parse(localStorage.getItem("promptly.saved") || localStorage.getItem("betterPages.saved") || "[]")
+  entries: loadSavedEntries()
 };
 
 const form = document.querySelector("#promptForm");
@@ -240,14 +240,30 @@ const promptText = document.querySelector("#promptText");
 const promptTag = document.querySelector("#promptTag");
 const timeTag = document.querySelector("#timeTag");
 const newPromptButton = document.querySelector("#newPrompt");
-const saveButton = document.querySelector("#savePrompt");
 const copyButton = document.querySelector("#copyPrompt");
-const savedList = document.querySelector("#savedList");
-const clearButton = document.querySelector("#clearSaved");
+const entry = document.querySelector("#entry");
+const saveEntryButton = document.querySelector("#saveEntry");
+const entryStatus = document.querySelector("#entryStatus");
+const entriesList = document.querySelector("#entriesList");
+const clearEntriesButton = document.querySelector("#clearEntries");
 const timer = document.querySelector("#timer");
 const startTimer = document.querySelector("#startTimer");
 const resetTimer = document.querySelector("#resetTimer");
 const themeToggle = document.querySelector("#themeToggle");
+
+function loadSavedEntries() {
+  try {
+    const stored = localStorage.getItem("promptly.entries") || "[]";
+    const entries = JSON.parse(stored);
+    return Array.isArray(entries) ? entries : [];
+  } catch {
+    return [];
+  }
+}
+
+function getWordCount(text) {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
 
 function pickPrompt() {
   const focus = focusInput.value;
@@ -268,45 +284,52 @@ function pickPrompt() {
   setTimer(Number(timeInput.value) * 60);
 }
 
-function renderSaved() {
-  savedList.innerHTML = "";
+function renderEntries() {
+  entriesList.innerHTML = "";
 
-  if (!state.saved.length) {
+  if (!state.entries.length) {
     const empty = document.createElement("p");
     empty.className = "empty-state";
-    empty.textContent = "No saved prompts yet.";
-    savedList.append(empty);
+    empty.textContent = "No saved reflections yet.";
+    entriesList.append(empty);
     return;
   }
 
-  state.saved.forEach((item) => {
+  state.entries.forEach((item) => {
     const card = document.createElement("article");
     card.className = "saved-item";
 
-    const text = document.createElement("p");
-    text.textContent = item.text;
+    const prompt = document.createElement("p");
+    prompt.className = "entry-prompt";
+    prompt.textContent = item.prompt;
 
-    const date = document.createElement("small");
-    date.textContent = item.createdAt;
+    const preview = document.createElement("p");
+    preview.className = "entry-preview";
+    preview.textContent = item.text;
 
-    const use = document.createElement("button");
-    use.type = "button";
-    use.textContent = "Use prompt";
-    use.addEventListener("click", () => {
-      state.currentPrompt = item.text;
-      promptText.textContent = item.text;
+    const meta = document.createElement("small");
+    meta.textContent = `${item.createdAt} · ${item.wordCount} words`;
+
+    const open = document.createElement("button");
+    open.type = "button";
+    open.textContent = "Open reflection";
+    open.addEventListener("click", () => {
+      entry.value = item.text;
+      state.currentPrompt = item.prompt;
+      promptText.textContent = item.prompt;
       promptTag.textContent = item.focus;
       timeTag.textContent = item.time;
+      entryStatus.textContent = "Loaded saved reflection.";
     });
 
-    card.append(text, date, use);
-    savedList.append(card);
+    card.append(prompt, preview, meta, open);
+    entriesList.append(card);
   });
 }
 
-function persistSaved() {
-  localStorage.setItem("promptly.saved", JSON.stringify(state.saved));
-  renderSaved();
+function persistEntries() {
+  localStorage.setItem("promptly.entries", JSON.stringify(state.entries));
+  renderEntries();
 }
 
 function setTimer(seconds) {
@@ -351,25 +374,6 @@ form.addEventListener("submit", (event) => {
 
 newPromptButton.addEventListener("click", pickPrompt);
 
-saveButton.addEventListener("click", () => {
-  const item = {
-    text: state.currentPrompt,
-    focus: promptTag.textContent,
-    time: timeTag.textContent,
-    createdAt: new Intl.DateTimeFormat(undefined, {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit"
-    }).format(new Date())
-  };
-
-  if (!state.saved.some((saved) => saved.text === item.text)) {
-    state.saved = [item, ...state.saved].slice(0, 12);
-    persistSaved();
-  }
-});
-
 copyButton.addEventListener("click", async () => {
   await navigator.clipboard.writeText(state.currentPrompt);
   copyButton.textContent = "Copied";
@@ -378,9 +382,40 @@ copyButton.addEventListener("click", async () => {
   }, 1200);
 });
 
-clearButton.addEventListener("click", () => {
-  state.saved = [];
-  persistSaved();
+saveEntryButton.addEventListener("click", () => {
+  const text = entry.value.trim();
+
+  if (!text) {
+    entryStatus.textContent = "Write a reflection before saving.";
+    entry.focus();
+    return;
+  }
+
+  const item = {
+    id: globalThis.crypto?.randomUUID?.() || String(Date.now()),
+    text,
+    prompt: state.currentPrompt,
+    focus: promptTag.textContent,
+    time: timeTag.textContent,
+    wordCount: getWordCount(text),
+    createdAt: new Intl.DateTimeFormat(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
+    }).format(new Date())
+  };
+
+  state.entries = [item, ...state.entries].slice(0, 30);
+  persistEntries();
+  entry.value = "";
+  entryStatus.textContent = "Reflection saved.";
+});
+
+clearEntriesButton.addEventListener("click", () => {
+  state.entries = [];
+  persistEntries();
+  entryStatus.textContent = "Saved reflections cleared.";
 });
 
 timeInput.addEventListener("change", () => {
@@ -407,5 +442,5 @@ if ((localStorage.getItem("promptly.theme") || localStorage.getItem("betterPages
 }
 
 state.currentPrompt = promptText.textContent.trim();
-renderSaved();
+renderEntries();
 renderTimer();

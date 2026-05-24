@@ -3,6 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="referrer" content="no-referrer" />
     <title>Promptly</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -73,7 +78,6 @@
             What would change today if you trusted that your needs were worth listening to the first time?
           </p>
           <div class="prompt-actions">
-            <button class="secondary-button" id="savePrompt" type="button">Save</button>
             <button class="secondary-button" id="copyPrompt" type="button">Copy</button>
             <button class="secondary-button" id="newPrompt" type="button">Again</button>
           </div>
@@ -107,12 +111,17 @@
           ></textarea>
         </label>
 
+        <div class="entry-actions">
+          <p id="entryStatus" aria-live="polite">Your reflection is saved only on this device.</p>
+          <button class="primary-button" id="saveEntry" type="button">Save reflection</button>
+        </div>
+
         <div class="saved">
           <div class="section-heading">
-            <p class="eyebrow">Saved prompts</p>
-            <button class="text-button" id="clearSaved" type="button">Clear</button>
+            <p class="eyebrow">Saved reflections</p>
+            <button class="text-button" id="clearEntries" type="button">Clear</button>
           </div>
-          <div class="saved-list" id="savedList"></div>
+          <div class="saved-list" id="entriesList"></div>
         </div>
       </section>
     </main>
