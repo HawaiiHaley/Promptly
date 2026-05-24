@@ -253,7 +253,11 @@ const themeToggle = document.querySelector("#themeToggle");
 
 function loadSavedEntries() {
   try {
-    const stored = localStorage.getItem("promptly.entries") || "[]";
+    const stored =
+      localStorage.getItem("promptimistic.entries") ||
+      localStorage.getItem("innerWord.entries") ||
+      localStorage.getItem("promptly.entries") ||
+      "[]";
     const entries = JSON.parse(stored);
     return Array.isArray(entries) ? entries : [];
   } catch {
@@ -328,7 +332,7 @@ function renderEntries() {
 }
 
 function persistEntries() {
-  localStorage.setItem("promptly.entries", JSON.stringify(state.entries));
+  localStorage.setItem("promptimistic.entries", JSON.stringify(state.entries));
   renderEntries();
 }
 
@@ -433,10 +437,15 @@ themeToggle.addEventListener("click", () => {
   document.body.classList.toggle("dark");
   const isDark = document.body.classList.contains("dark");
   themeToggle.querySelector("span").textContent = isDark ? "☼" : "☾";
-  localStorage.setItem("promptly.theme", isDark ? "dark" : "light");
+  localStorage.setItem("promptimistic.theme", isDark ? "dark" : "light");
 });
 
-if ((localStorage.getItem("promptly.theme") || localStorage.getItem("betterPages.theme")) === "dark") {
+if (
+  (localStorage.getItem("promptimistic.theme") ||
+    localStorage.getItem("innerWord.theme") ||
+    localStorage.getItem("promptly.theme") ||
+    localStorage.getItem("betterPages.theme")) === "dark"
+) {
   document.body.classList.add("dark");
   themeToggle.querySelector("span").textContent = "☼";
 }
