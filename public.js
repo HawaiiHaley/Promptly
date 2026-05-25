@@ -4,6 +4,22 @@ const dailyPromptText = document.querySelector("#dailyPromptText");
 const dailyResponseForm = document.querySelector("#dailyResponseForm");
 const dailyResponse = document.querySelector("#dailyResponse");
 const dailyResponseStatus = document.querySelector("#dailyResponseStatus");
+const quoteTrack = document.querySelector("#quoteTrack");
+
+const inspirationQuotes = [
+  "Paper has more patience than people. - Anne Frank",
+  "Let us dare to read, think, speak and write. - John Adams",
+  "Patience and perseverance have a magical effect. - John Quincy Adams",
+  "I wished to live deliberately. - Henry David Thoreau",
+  "And so to bed. - Samuel Pepys",
+  "Learning never exhausts the mind. - Leonardo da Vinci",
+  "The universe is change. - Marcus Aurelius",
+  "Our life is what our thoughts make it. - Marcus Aurelius",
+  "Dwell on the beauty of life. - Marcus Aurelius",
+  "Nothing is worth more than this day. - Johann Wolfgang von Goethe",
+  "Every day is a little life. - Arthur Schopenhauer",
+  "I am seeking, I am striving, I am in it with all my heart. - Vincent van Gogh"
+];
 
 const dailyPrompts = [
   "What is one small thing from today that you would like to remember?",
@@ -80,6 +96,15 @@ function renderDailyPrompt() {
   dailyPromptText.textContent = dailyPrompts[index];
 }
 
+function renderQuoteRibbon() {
+  quoteTrack.innerHTML = "";
+  [...inspirationQuotes, ...inspirationQuotes].forEach((quote) => {
+    const item = document.createElement("span");
+    item.textContent = quote;
+    quoteTrack.append(item);
+  });
+}
+
 function renderPublicEntries() {
   const shared = loadEntries().filter((item) => item.visibility === "public");
   publicEntries.innerHTML = "";
@@ -146,6 +171,7 @@ dailyResponseForm.addEventListener("submit", (event) => {
 });
 
 renderDailyPrompt();
+renderQuoteRibbon();
 
 if (
   (localStorage.getItem("promptimistic.theme") ||

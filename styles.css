@@ -627,7 +627,7 @@ textarea {
 .public-page .public-shell {
   width: min(1080px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 32px 0 44px;
+  padding: 18px 0 44px;
 }
 
 .public-hero,
@@ -681,6 +681,46 @@ textarea {
   max-width: 760px;
   position: relative;
   z-index: 1;
+}
+
+.quote-ribbon {
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+}
+
+.quote-track {
+  display: flex;
+  width: max-content;
+  gap: 12px;
+  padding: 9px 0;
+  animation: quote-crawl 58s linear infinite;
+}
+
+.quote-track span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sky) 12%, transparent);
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@keyframes quote-crawl {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .public-reflections {
@@ -889,6 +929,14 @@ textarea {
     flex-direction: column;
   }
 
+  .quote-ribbon {
+    mask-image: none;
+  }
+
+  .quote-track {
+    animation-duration: 46s;
+  }
+
   .secondary-link {
     padding: 0 12px;
   }
@@ -911,5 +959,9 @@ textarea {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 1ms !important;
+  }
+
+  .quote-track {
+    transform: none;
   }
 }
