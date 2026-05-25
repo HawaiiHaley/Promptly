@@ -180,6 +180,7 @@ button {
   color: var(--ink);
   font-size: 1.12rem;
   font-weight: 900;
+  text-decoration: none;
 }
 
 .brand-mark {
@@ -874,8 +875,9 @@ textarea {
 
   .brand-row,
   .public-nav {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
   }
 
   .daily-prompt {
@@ -887,8 +889,8 @@ textarea {
     flex-direction: column;
   }
 
-  .public-nav .secondary-link {
-    width: 100%;
+  .secondary-link {
+    padding: 0 12px;
   }
 
   .top-actions {
