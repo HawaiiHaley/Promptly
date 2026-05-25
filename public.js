@@ -4,7 +4,14 @@ const dailyPromptText = document.querySelector("#dailyPromptText");
 const dailyResponseForm = document.querySelector("#dailyResponseForm");
 const dailyResponse = document.querySelector("#dailyResponse");
 const dailyResponseStatus = document.querySelector("#dailyResponseStatus");
+const shareDialog = document.querySelector("#shareDialog");
+const savePrivate = document.querySelector("#savePrivate");
+const savePublic = document.querySelector("#savePublic");
 const quoteTrack = document.querySelector("#quoteTrack");
+
+const state = {
+  pendingDailyText: ""
+};
 
 const inspirationQuotes = [
   "Paper has more patience than people. - Anne Frank",
@@ -133,9 +140,94 @@ function renderPublicEntries() {
     const text = document.createElement("p");
     text.textContent = item.text || "";
 
-    card.append(prompt, meta, text);
+    const actions = document.createElement("div");
+    actions.className = "public-card-actions";
+
+    const edit = document.createElement("button");
+    edit.type = "button";
+    edit.textContent = "Edit";
+    edit.addEventListener("click", () => {
+      const updated = window.prompt("Edit this public reflection:", item.text || "");
+
+      if (updated === null) {
+        return;
+      }
+
+      const trimmed = updated.trim();
+
+      if (!trimmed) {
+        dailyResponseStatus.textContent = "A public reflection cannot be blank.";
+        return;
+      }
+
+      const entries = loadEntries().map((entry) =>
+        entry.id === item.id
+          ? {
+              ...entry,
+              text: trimmed,
+              wordCount: getWordCount(trimmed),
+              updatedAtISO: new Date().toISOString()
+            }
+          : entry
+      );
+      saveEntries(entries);
+      dailyResponseStatus.textContent = "Public reflection updated.";
+      renderPublicEntries();
+    });
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "Delete";
+    remove.addEventListener("click", () => {
+      if (!window.confirm("Delete this public reflection?")) {
+        return;
+      }
+
+      saveEntries(loadEntries().filter((entry) => entry.id !== item.id));
+      dailyResponseStatus.textContent = "Public reflection deleted.";
+      renderPublicEntries();
+    });
+
+    actions.append(edit, remove);
+    card.append(prompt, meta, text, actions);
     publicEntries.append(card);
   });
+}
+
+function saveDailyReflection(visibility) {
+  const now = new Date();
+  const entries = loadEntries();
+  const item = {
+    id: globalThis.crypto?.randomUUID?.() || String(Date.now()),
+    text: state.pendingDailyText,
+    prompt: dailyPromptText.textContent.trim(),
+    focus: "Today’s prompt",
+    time: "Daily",
+    visibility,
+    actionStep: "",
+    actionDone: false,
+    wordCount: getWordCount(state.pendingDailyText),
+    createdAt: formatEntryDate(now),
+    createdAtISO: now.toISOString()
+  };
+
+  saveEntries([item, ...entries].slice(0, 50));
+  dailyResponse.value = "";
+  state.pendingDailyText = "";
+  dailyResponseStatus.textContent =
+    visibility === "public"
+      ? "Reflection shared on the public page."
+      : "Reflection saved to your private journal.";
+  renderPublicEntries();
+}
+
+function openShareDialog() {
+  if (typeof shareDialog.showModal === "function") {
+    shareDialog.showModal();
+  } else {
+    const sharePublicly = window.confirm("Share this reflection on the public page?");
+    saveDailyReflection(sharePublicly ? "public" : "private");
+  }
 }
 
 dailyResponseForm.addEventListener("submit", (event) => {
@@ -143,31 +235,23 @@ dailyResponseForm.addEventListener("submit", (event) => {
   const text = dailyResponse.value.trim();
 
   if (!text) {
-    dailyResponseStatus.textContent = "Write a reflection before sharing.";
+    dailyResponseStatus.textContent = "Write a reflection before saving.";
     dailyResponse.focus();
     return;
   }
 
-  const now = new Date();
-  const entries = loadEntries();
-  const item = {
-    id: globalThis.crypto?.randomUUID?.() || String(Date.now()),
-    text,
-    prompt: dailyPromptText.textContent.trim(),
-    focus: "Today’s prompt",
-    time: "Daily",
-    visibility: "public",
-    actionStep: "",
-    actionDone: false,
-    wordCount: getWordCount(text),
-    createdAt: formatEntryDate(now),
-    createdAtISO: now.toISOString()
-  };
+  state.pendingDailyText = text;
+  openShareDialog();
+});
 
-  saveEntries([item, ...entries].slice(0, 50));
-  dailyResponse.value = "";
-  dailyResponseStatus.textContent = "Reflection shared on the public page.";
-  renderPublicEntries();
+savePrivate.addEventListener("click", () => {
+  shareDialog.close();
+  saveDailyReflection("private");
+});
+
+savePublic.addEventListener("click", () => {
+  shareDialog.close();
+  saveDailyReflection("public");
 });
 
 renderDailyPrompt();

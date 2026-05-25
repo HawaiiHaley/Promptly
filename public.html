@@ -40,7 +40,6 @@
       <section class="daily-prompt" aria-labelledby="daily-title">
         <div>
           <p class="eyebrow">Today’s prompt</p>
-          <h2 id="daily-title">A question for everyone</h2>
         </div>
         <form class="daily-response" id="dailyResponseForm">
           <p id="dailyPromptText">
@@ -75,6 +74,18 @@
         <div class="public-list" id="publicEntries"></div>
       </section>
     </main>
+
+    <dialog class="share-dialog" id="shareDialog">
+      <form method="dialog">
+        <p class="eyebrow">Save reflection</p>
+        <h2>Where should this go?</h2>
+        <p>Choose whether this reflection appears on the public page or stays in your private journal.</p>
+        <div class="share-dialog-actions">
+          <button class="secondary-button" value="private" type="button" id="savePrivate">Private journal</button>
+          <button class="primary-button" value="public" type="button" id="savePublic">Public page</button>
+        </div>
+      </form>
+    </dialog>
 
     <script src="public.js"></script>
   </body>
