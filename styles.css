@@ -134,6 +134,7 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: nowrap;
 }
 
 .secondary-link {
@@ -229,13 +230,40 @@ h1 {
 
 .controls {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin: 48px 0 28px;
   padding: 12px;
   background: color-mix(in srgb, var(--panel-strong) 64%, transparent);
   border: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
   border-radius: 16px;
+}
+
+.daily-control {
+  grid-column: 1 / -1;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, var(--line));
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--sky) 14%, transparent), transparent 50%),
+    color-mix(in srgb, var(--panel) 78%, transparent);
+}
+
+.daily-control span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.daily-control p {
+  margin: 0;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.08rem, 2vw, 1.45rem);
+  line-height: 1.25;
 }
 
 label {
@@ -297,7 +325,7 @@ select:focus {
 }
 
 .controls .primary-button {
-  grid-column: span 4;
+  grid-column: 1 / -1;
 }
 
 .secondary-button {
@@ -363,7 +391,7 @@ button:hover {
   min-height: 690px;
   padding: 18px;
   display: grid;
-  grid-template-rows: auto minmax(260px, 1fr) auto auto;
+  grid-template-rows: auto minmax(260px, 1fr) auto auto auto;
   gap: 18px;
 }
 
@@ -423,6 +451,17 @@ textarea {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 62%, transparent);
 }
 
+.action-step-wrap {
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, var(--line));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--panel-strong) 46%, transparent);
+}
+
+.action-step-wrap input {
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+}
+
 .entry-actions {
   display: flex;
   align-items: center;
@@ -469,6 +508,44 @@ textarea {
 
 .entry-card-actions button:last-child {
   color: color-mix(in srgb, var(--accent) 70%, #8b1e1e);
+}
+
+.next-step {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 12px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--leaf) 24%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--leaf) 8%, transparent);
+}
+
+.next-step small {
+  grid-column: 1 / -1;
+}
+
+.next-step p {
+  color: var(--ink);
+  font-weight: 750;
+}
+
+.next-step button {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--leaf);
+}
+
+.next-step.is-done {
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+  background: color-mix(in srgb, var(--sky) 11%, transparent);
+}
+
+.next-step.is-done p {
+  text-decoration: line-through;
+  color: var(--muted);
 }
 
 .saved {
@@ -553,6 +630,7 @@ textarea {
 }
 
 .public-hero,
+.daily-prompt,
 .public-reflections {
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -607,6 +685,61 @@ textarea {
 .public-reflections {
   margin-top: 18px;
   padding: clamp(18px, 4vw, 32px);
+}
+
+.daily-prompt {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.28fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+  margin-top: 18px;
+  padding: clamp(18px, 4vw, 30px);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--sky) 18%, transparent), transparent 46%),
+    color-mix(in srgb, var(--panel) 88%, transparent);
+}
+
+.daily-prompt h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.25rem, 2.5vw, 2rem);
+  line-height: 1.08;
+}
+
+.daily-response {
+  display: grid;
+  gap: 14px;
+}
+
+.daily-response > p {
+  margin: 0;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.45rem, 3vw, 2.3rem);
+  line-height: 1.18;
+}
+
+.daily-response textarea {
+  min-height: 150px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+  box-shadow: none;
+}
+
+.daily-response-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.daily-response-actions p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.35;
 }
 
 .public-reflections h2 {
@@ -665,18 +798,25 @@ textarea {
 
 @media (max-width: 680px) {
   .app-shell {
-    width: min(100% - 20px, 1180px);
+    width: min(100% - 16px, 1180px);
     padding: 10px 0;
   }
 
   .generator,
   .workspace {
-    padding: 18px;
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  h1 {
+    font-size: clamp(2.25rem, 12vw, 3.1rem);
+    line-height: 0.98;
   }
 
   .controls {
     grid-template-columns: 1fr;
-    margin-top: 34px;
+    margin-top: 28px;
+    padding: 10px;
   }
 
   .controls .primary-button {
@@ -692,11 +832,30 @@ textarea {
     flex-direction: column;
   }
 
+  textarea {
+    min-height: 240px;
+    padding-right: 16px;
+  }
+
+  .action-step-wrap {
+    padding: 12px;
+  }
+
   .entry-buttons,
   .entry-buttons button,
   .archive-tools,
-  .export-actions button {
+  .export-actions button,
+  .next-step button {
     width: 100%;
+  }
+
+  .entry-buttons {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .next-step {
+    grid-template-columns: 1fr;
   }
 
   .archive-tools {
@@ -710,6 +869,7 @@ textarea {
 
   #promptText {
     min-height: 120px;
+    font-size: clamp(1.45rem, 8vw, 2rem);
   }
 
   .brand-row,
@@ -718,14 +878,22 @@ textarea {
     flex-direction: column;
   }
 
-  .top-actions,
-  .top-actions .secondary-link,
+  .daily-prompt {
+    grid-template-columns: 1fr;
+  }
+
+  .daily-response-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .public-nav .secondary-link {
     width: 100%;
   }
 
   .top-actions {
-    align-items: stretch;
+    align-items: center;
+    flex-direction: row;
   }
 
   .visibility-choice {

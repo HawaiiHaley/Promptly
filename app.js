@@ -225,28 +225,38 @@ const prompts = {
   }
 };
 
-const intentionPrompts = {
-  understand: [
-    "What feeling keeps asking for your attention, and what might it be trying to protect?",
-    "What do you understand about yourself today that you did not understand a year ago?"
-  ],
-  release: [
-    "What are you ready to stop carrying as if it still belongs to you?",
-    "What would become lighter if you let the story be unfinished for now?"
-  ],
-  decide: [
-    "What choice would feel most honest if you trusted yourself to handle the consequences?",
-    "Which option creates more aliveness, and which option mostly protects you from discomfort?"
-  ],
-  appreciate: [
-    "What small good thing has been quietly supporting you lately?",
-    "What part of your current life would your younger self be relieved to see?"
-  ],
-  begin: [
-    "What is the smallest next step that would make this desire feel real?",
-    "What could you start today without needing to feel fully ready?"
-  ]
-};
+const dailyPrompts = [
+  "What is one small thing from today that you would like to remember?",
+  "Where did you notice a little bit of ease today?",
+  "What is something kind you witnessed, offered, or received recently?",
+  "What made you feel more like yourself this week?",
+  "What is one ordinary moment that deserves more attention?",
+  "What helped you keep going today, even in a small way?",
+  "What is something you are learning to appreciate about this season of life?",
+  "Where did you feel a little more hopeful than before?",
+  "What is one thing you are glad you did not rush past?",
+  "What would you like to carry gently into tomorrow?",
+  "What is something simple that has been supporting you lately?",
+  "What moment from today would you put in a tiny keepsake box?",
+  "Where did you feel connected, even briefly?",
+  "What is one thing you handled better than you might have before?",
+  "What small beauty did you notice today?",
+  "What is something you want to thank yourself for trying?",
+  "Where did your day surprise you in a good or interesting way?",
+  "What helped you feel grounded today?",
+  "What is one sentence of encouragement you would share with someone else?",
+  "What part of your life feels quietly in progress?",
+  "What is something you are making room for?",
+  "What is one choice today that felt honest?",
+  "Where did you find a little softness?",
+  "What is something you hope tomorrow makes space for?",
+  "What is one small win worth naming?",
+  "What felt lighter than it used to?",
+  "What is something you are allowed to enjoy without explaining it?",
+  "What is one detail from today that made the day feel real?",
+  "What are you slowly becoming more open to?",
+  "What is one thing you would like to remember about who you are?"
+];
 
 const state = {
   currentPrompt: "",
@@ -260,17 +270,17 @@ const form = document.querySelector("#promptForm");
 const focusInput = document.querySelector("#focus");
 const toneInput = document.querySelector("#tone");
 const timeInput = document.querySelector("#time");
-const intentionInput = document.querySelector("#intention");
 const promptText = document.querySelector("#promptText");
 const promptTag = document.querySelector("#promptTag");
 const timeTag = document.querySelector("#timeTag");
+const dailyPromptText = document.querySelector("#dailyPromptText");
 const entry = document.querySelector("#entry");
+const actionStep = document.querySelector("#actionStep");
 const entryVisibility = document.querySelector("#entryVisibility");
 const saveEntryButton = document.querySelector("#saveEntry");
 const cancelEditButton = document.querySelector("#cancelEdit");
 const entryStatus = document.querySelector("#entryStatus");
 const entriesList = document.querySelector("#entriesList");
-const clearEntriesButton = document.querySelector("#clearEntries");
 const entrySearch = document.querySelector("#entrySearch");
 const entryFocusFilter = document.querySelector("#entryFocusFilter");
 const entryDateFilter = document.querySelector("#entryDateFilter");
@@ -295,7 +305,9 @@ function loadSavedEntries() {
           ...item,
           id: item.id || `legacy-${index}-${item.createdAt || Date.now()}`,
           wordCount: item.wordCount || getWordCount(item.text || ""),
-          visibility: item.visibility || (item.isPublic ? "public" : "private")
+          visibility: item.visibility || (item.isPublic ? "public" : "private"),
+          actionStep: item.actionStep || "",
+          actionDone: Boolean(item.actionDone)
         }))
       : [];
   } catch {
@@ -316,6 +328,17 @@ function formatEntryDate(date = new Date()) {
   }).format(date);
 }
 
+function getDayOfYear(date) {
+  const start = new Date(date.getFullYear(), 0, 0);
+  const difference = date - start;
+  return Math.floor(difference / 86400000);
+}
+
+function renderDailyPrompt() {
+  const index = getDayOfYear(new Date()) % dailyPrompts.length;
+  dailyPromptText.textContent = dailyPrompts[index];
+}
+
 function getDraft() {
   try {
     return JSON.parse(localStorage.getItem("promptimistic.draft") || "null");
@@ -326,8 +349,9 @@ function getDraft() {
 
 function persistDraft() {
   const text = entry.value;
+  const action = actionStep.value;
 
-  if (!text.trim()) {
+  if (!text.trim() && !action.trim()) {
     localStorage.removeItem("promptimistic.draft");
     return;
   }
@@ -336,6 +360,7 @@ function persistDraft() {
     "promptimistic.draft",
     JSON.stringify({
       text,
+      actionStep: action,
       prompt: state.currentPrompt,
       focus: promptTag.textContent,
       time: timeTag.textContent,
@@ -351,6 +376,7 @@ function clearDraft() {
 
 function applyEntryToWorkspace(item, status) {
   entry.value = item.text;
+  actionStep.value = item.actionStep || "";
   entryVisibility.value = item.visibility || "private";
   state.currentPrompt = item.prompt;
   promptText.textContent = item.prompt;
@@ -383,6 +409,7 @@ function getFilteredEntries() {
     const matchesQuery =
       !query ||
       item.text.toLowerCase().includes(query) ||
+      (item.actionStep || "").toLowerCase().includes(query) ||
       item.prompt.toLowerCase().includes(query) ||
       item.focus.toLowerCase().includes(query);
     const matchesFocus = focus === "all" || item.focus === focus;
@@ -401,9 +428,12 @@ function serializeEntries(entries) {
     .map((item) => {
       return [
         item.prompt,
-        `${item.focus} · ${item.createdAt} · ${item.wordCount} words`,
+        `${item.focus} · ${item.createdAt} · ${item.wordCount} words${
+          item.actionStep ? ` · Next step: ${item.actionDone ? "done" : "not yet"}` : ""
+        }`,
         "",
-        item.text
+        item.text,
+        item.actionStep ? `\nNext step: ${item.actionStep}` : ""
       ].join("\n");
     })
     .join("\n\n---\n\n");
@@ -432,7 +462,9 @@ function openPdfPrintView(entries) {
   const safeEntries = entries.map((item) => ({
     prompt: item.prompt,
     meta: `${item.focus} · ${item.createdAt} · ${item.wordCount} words`,
-    text: item.text
+    text: item.text,
+    actionStep: item.actionStep || "",
+    actionDone: item.actionDone
   }));
 
   printWindow.document.write(`<!doctype html>
@@ -458,11 +490,18 @@ function openPdfPrintView(entries) {
     const heading = printWindow.document.createElement("h2");
     const meta = printWindow.document.createElement("small");
     const text = printWindow.document.createElement("p");
+    const action = printWindow.document.createElement("p");
 
     heading.textContent = item.prompt;
     meta.textContent = item.meta;
     text.textContent = item.text;
+    action.textContent = item.actionStep
+      ? `Next step: ${item.actionStep}${item.actionDone ? " (done)" : " (not yet)"}`
+      : "";
     article.append(heading, meta, text);
+    if (item.actionStep) {
+      article.append(action);
+    }
     printWindow.document.body.append(article);
   });
 
@@ -474,14 +513,13 @@ function openPdfPrintView(entries) {
 function pickPrompt() {
   let focus = focusInput.value;
   const tone = toneInput.value;
-  const intention = intentionInput.value;
   const focusKeys = Object.keys(prompts);
 
   if (focus === "surprise") {
     focus = focusKeys[Math.floor(Math.random() * focusKeys.length)];
   }
 
-  const options = [...prompts[focus][tone], ...intentionPrompts[intention]];
+  const options = prompts[focus][tone];
   let next = options[Math.floor(Math.random() * options.length)];
 
   if (options.length > 1) {
@@ -532,8 +570,44 @@ function renderEntries() {
 
     const meta = document.createElement("small");
     meta.textContent = `${item.createdAt} · ${item.wordCount} words · ${
-      item.visibility === "public" ? "Shared openly" : "Private space"
+      item.visibility === "public" ? "Public page" : "Private"
     }`;
+
+    let actionCard = null;
+
+    if (item.actionStep) {
+      actionCard = document.createElement("div");
+      actionCard.className = `next-step ${item.actionDone ? "is-done" : ""}`;
+
+      const actionCopy = document.createElement("p");
+      actionCopy.textContent = item.actionStep;
+
+      const actionLabel = document.createElement("small");
+      actionLabel.textContent = item.actionDone
+        ? "You marked this next step done."
+        : "Gentle follow-up: did you do this yet?";
+
+      const actionToggle = document.createElement("button");
+      actionToggle.type = "button";
+      actionToggle.textContent = item.actionDone ? "Not yet" : "Done";
+      actionToggle.addEventListener("click", () => {
+        state.entries = state.entries.map((entryItem) =>
+          entryItem.id === item.id
+            ? {
+                ...entryItem,
+                actionDone: !entryItem.actionDone,
+                updatedAtISO: new Date().toISOString()
+              }
+            : entryItem
+        );
+        persistEntries();
+        entryStatus.textContent = item.actionDone
+          ? "Next step moved back to not yet."
+          : "Next step marked done.";
+      });
+
+      actionCard.append(actionLabel, actionCopy, actionToggle);
+    }
 
     const open = document.createElement("button");
     open.type = "button";
@@ -544,7 +618,7 @@ function renderEntries() {
 
     const visibility = document.createElement("button");
     visibility.type = "button";
-    visibility.textContent = item.visibility === "public" ? "Make private" : "Share openly";
+    visibility.textContent = item.visibility === "public" ? "Make private" : "Share";
     visibility.addEventListener("click", () => {
       state.entries = state.entries.map((entryItem) =>
         entryItem.id === item.id
@@ -558,8 +632,8 @@ function renderEntries() {
       persistEntries();
       entryStatus.textContent =
         item.visibility === "public"
-          ? "Reflection moved back to private space."
-          : "Reflection added to the public page.";
+          ? "Reflection moved back to your private journal."
+          : "Reflection shared on the public page.";
     });
 
     const remove = document.createElement("button");
@@ -582,7 +656,11 @@ function renderEntries() {
     actions.className = "entry-card-actions";
     actions.append(open, visibility, remove);
 
-    card.append(prompt, preview, meta, actions);
+    card.append(prompt, preview, meta);
+    if (actionCard) {
+      card.append(actionCard);
+    }
+    card.append(actions);
     entriesList.append(card);
   });
 }
@@ -634,6 +712,7 @@ form.addEventListener("submit", (event) => {
 
 saveEntryButton.addEventListener("click", () => {
   const text = entry.value.trim();
+  const nextAction = actionStep.value.trim();
 
   if (!text) {
     entryStatus.textContent = "Write a reflection before saving.";
@@ -651,6 +730,8 @@ saveEntryButton.addEventListener("click", () => {
             focus: promptTag.textContent,
             time: timeTag.textContent,
             visibility: entryVisibility.value,
+            actionStep: nextAction,
+            actionDone: item.actionStep === nextAction ? item.actionDone : false,
             wordCount: getWordCount(text),
             updatedAtISO: new Date().toISOString()
           }
@@ -665,6 +746,8 @@ saveEntryButton.addEventListener("click", () => {
       focus: promptTag.textContent,
       time: timeTag.textContent,
       visibility: entryVisibility.value,
+      actionStep: nextAction,
+      actionDone: false,
       wordCount: getWordCount(text),
       createdAt: formatEntryDate(now),
       createdAtISO: now.toISOString()
@@ -675,28 +758,23 @@ saveEntryButton.addEventListener("click", () => {
 
   persistEntries();
   entry.value = "";
+  actionStep.value = "";
   entryVisibility.value = "private";
   clearDraft();
   clearEditingMode(state.editingId ? "Reflection updated." : "Reflection saved.");
 });
 
-clearEntriesButton.addEventListener("click", () => {
-  if (window.confirm("Clear all saved reflections? This cannot be undone.")) {
-    state.entries = [];
-    persistEntries();
-    entryStatus.textContent = "Saved reflections cleared.";
-  }
-});
-
 cancelEditButton.addEventListener("click", () => {
   state.editingId = null;
   entry.value = "";
+  actionStep.value = "";
   entryVisibility.value = "private";
   clearDraft();
   clearEditingMode("Edit canceled.");
 });
 
 entry.addEventListener("input", persistDraft);
+actionStep.addEventListener("input", persistDraft);
 entrySearch.addEventListener("input", renderEntries);
 entryFocusFilter.addEventListener("change", renderEntries);
 entryDateFilter.addEventListener("change", renderEntries);
@@ -745,6 +823,7 @@ if (
 }
 
 state.currentPrompt = promptText.textContent.trim();
+renderDailyPrompt();
 const draft = getDraft();
 
 if (draft?.text) {

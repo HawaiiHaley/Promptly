@@ -31,6 +31,33 @@
         </div>
       </section>
 
+      <section class="daily-prompt" aria-labelledby="daily-title">
+        <div>
+          <p class="eyebrow">Today’s prompt</p>
+          <h2 id="daily-title">A question for everyone</h2>
+        </div>
+        <form class="daily-response" id="dailyResponseForm">
+          <p id="dailyPromptText">
+            What is one small thing from today that you would like to remember?
+          </p>
+          <label>
+            <span>Your reflection</span>
+            <textarea
+              id="dailyResponse"
+              placeholder="Write a short reflection..."
+              spellcheck="true"
+              autocapitalize="sentences"
+            ></textarea>
+          </label>
+          <div class="daily-response-actions">
+            <p id="dailyResponseStatus" aria-live="polite">
+              Responses save to the public reflections list on this device.
+            </p>
+            <button class="primary-button" type="submit">Share reflection</button>
+          </div>
+        </form>
+      </section>
+
       <section class="public-reflections" aria-labelledby="shared-title">
         <div class="section-heading">
           <div>

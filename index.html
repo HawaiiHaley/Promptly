@@ -15,25 +15,33 @@
     <main class="app-shell">
       <section class="generator" aria-labelledby="app-title">
         <div class="brand-row">
-          <div class="brand-copy">
-            <div class="brand-lockup" aria-label="Promptimistic">
-              <span class="brand-mark" aria-hidden="true">P</span>
-              <span>Promptimistic</span>
-            </div>
-            <h1 id="app-title">A better question, right when you need it.</h1>
-            <p class="tagline">
-              Reflective prompts for clarity, growth, healing, and the next honest step.
-            </p>
+          <div class="brand-lockup" aria-label="Promptimistic">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Promptimistic</span>
           </div>
           <div class="top-actions" aria-label="App shortcuts">
             <a class="secondary-link" href="public.html">Public page</a>
-            <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme">
+            <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle day and night mode">
               <span aria-hidden="true">☾</span>
             </button>
           </div>
         </div>
 
+        <div class="brand-copy">
+          <h1 id="app-title">Journal prompts that turn reflection into action.</h1>
+          <p class="tagline">
+            Reflective prompts for clarity, growth, healing, and the next honest step.
+          </p>
+        </div>
+
         <form class="controls" id="promptForm">
+          <div class="daily-control" aria-labelledby="private-daily-title">
+            <div>
+              <span id="private-daily-title">Today’s prompt</span>
+              <p id="dailyPromptText">What is one small thing from today that you would like to remember?</p>
+            </div>
+          </div>
+
           <label>
             <span>Focus</span>
             <select id="focus">
@@ -67,17 +75,6 @@
               <option value="5" selected>5 min</option>
               <option value="10">10 min</option>
               <option value="15">15 min</option>
-            </select>
-          </label>
-
-          <label>
-            <span>Intention</span>
-            <select id="intention">
-              <option value="begin">Take the next step</option>
-              <option value="decide">Make a decision</option>
-              <option value="appreciate">Notice what is good</option>
-              <option value="release">Release something</option>
-              <option value="understand">Understand myself</option>
             </select>
           </label>
 
@@ -123,14 +120,24 @@
           ></textarea>
         </label>
 
+        <label class="action-step-wrap">
+          <span>One small next step</span>
+          <input
+            id="actionStep"
+            type="text"
+            placeholder="Optional: What is one small thing you can do next?"
+            autocomplete="off"
+          />
+        </label>
+
         <div class="entry-actions">
-          <p id="entryStatus" aria-live="polite">Saved reflections stay private unless you choose to share them.</p>
+          <p id="entryStatus" aria-live="polite">Keep reflections private, or choose one to share on the public page.</p>
           <div class="entry-buttons">
             <label class="visibility-choice">
               <span>Visibility</span>
               <select id="entryVisibility">
-                <option value="private">Private space</option>
-                <option value="public">Share openly</option>
+                <option value="private">Keep private</option>
+                <option value="public">Share on public page</option>
               </select>
             </label>
             <button class="secondary-button" id="cancelEdit" type="button" hidden>Cancel edit</button>
@@ -141,7 +148,6 @@
         <div class="saved">
           <div class="section-heading">
             <p class="eyebrow">Saved reflections</p>
-            <button class="text-button" id="clearEntries" type="button">Clear</button>
           </div>
           <div class="archive-tools" aria-label="Saved reflection tools">
             <label>
