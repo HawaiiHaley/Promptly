@@ -406,13 +406,16 @@ function getFilteredEntries() {
   const date = entryDateFilter.value;
 
   return state.entries.filter((item) => {
+    const text = item.text || "";
+    const prompt = item.prompt || "";
+    const focusLabel = item.focus || "";
     const matchesQuery =
       !query ||
-      item.text.toLowerCase().includes(query) ||
+      text.toLowerCase().includes(query) ||
       (item.actionStep || "").toLowerCase().includes(query) ||
-      item.prompt.toLowerCase().includes(query) ||
-      item.focus.toLowerCase().includes(query);
-    const matchesFocus = focus === "all" || item.focus === focus;
+      prompt.toLowerCase().includes(query) ||
+      focusLabel.toLowerCase().includes(query);
+    const matchesFocus = focus === "all" || focusLabel === focus;
     const matchesDate = !date || (item.createdAtISO && item.createdAtISO.startsWith(date));
 
     return matchesQuery && matchesFocus && matchesDate;
@@ -562,14 +565,14 @@ function renderEntries() {
 
     const prompt = document.createElement("p");
     prompt.className = "entry-prompt";
-    prompt.textContent = item.prompt;
+    prompt.textContent = item.prompt || "Untitled prompt";
 
     const preview = document.createElement("p");
     preview.className = "entry-preview";
-    preview.textContent = item.text;
+    preview.textContent = item.text || "";
 
     const meta = document.createElement("small");
-    meta.textContent = `${item.createdAt} · ${item.wordCount} words · ${
+    meta.textContent = `${item.createdAt || "Saved"} · ${item.wordCount || 0} words · ${
       item.visibility === "public" ? "Public page" : "Private"
     }`;
 

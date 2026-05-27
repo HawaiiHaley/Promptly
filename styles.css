@@ -967,6 +967,40 @@ h1 {
   max-height: 320px;
 }
 
+.workspace .archive-tools {
+  grid-template-columns: 1fr;
+}
+
+.workspace .export-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.workspace .export-actions .secondary-button {
+  min-width: 0;
+  padding: 0 10px;
+}
+
+.workspace .entry-card-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.workspace .entry-card-actions button {
+  min-height: 32px;
+  overflow-wrap: anywhere;
+}
+
+.workspace .saved-item {
+  min-width: 0;
+}
+
+.workspace .entry-preview,
+.workspace .entry-prompt,
+.workspace .next-step p {
+  overflow-wrap: anywhere;
+}
+
 .public-page .public-shell {
   width: min(1120px, calc(100% - 32px));
   padding-bottom: 56px;
